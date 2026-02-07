@@ -1,0 +1,12 @@
+body {
+  background-color: black;
+  color: wheat;
+  font-family: cursive;
+}
+a {
+  color: white;
+  display: block;
+}
+img {
+  width: 400px;
+}

@@ -1,0 +1,2 @@
+- `req.url` -> vo path hai , jo client bhejtha hai hume as request
+- `route `-> route vo path , jo hum define karthe hai , uss request ko handle karne ke liye

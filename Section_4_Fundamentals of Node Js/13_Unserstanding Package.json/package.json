@@ -1,0 +1,13 @@
+{
+   "scripts": {
+      "test": "whoami",
+      "hi": "ls",
+      "start": "node app.js",
+      "dev": "node --watch app.js",
+      "stop": "pwd",
+      "restart": "git -v"
+   },
+   "dependencies": {
+      "axios": "^1.13.2"
+   }
+}

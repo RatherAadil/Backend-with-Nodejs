@@ -1,0 +1,16 @@
+[
+  {
+    "id": "c5349b2f-85cc-4619-bb8f-4e47137d945e",
+    "name": "Anurag Singh",
+    "email": "anurag@gmail.com",
+    "password": "abcd",
+    "rootDirId": "3303bb4e-7e63-406b-8e5c-382221c02507"
+  },
+  {
+    "id": "bd15c7aa-ebae-4d26-9c22-a17855cc3c08",
+    "name": "Rather Aadil",
+    "email": "ratheraadil61@gmail.com",
+    "password": "aadil",
+    "rootDirId": "9a388748-f80d-4855-a64b-bc7513b59e8a"
+  }
+]

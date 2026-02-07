@@ -1,0 +1,1 @@
+- There is nothing to discuss and the video was out of the context.

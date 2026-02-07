@@ -1,0 +1,13 @@
+## app.route() Method
+
+- Used to chain multiple HTTP methods (like GET, POST, etc.) for the same route in a cleaner way.
+
+Example:
+
+```javascript
+app.route('/user').get(getUser).post(createUser).put(updateUser);
+```
+
+- Keeps your code organized and readable.
+- Functionally same as using app.get(), app.post() separately.
+- Use it when methods share the same path.

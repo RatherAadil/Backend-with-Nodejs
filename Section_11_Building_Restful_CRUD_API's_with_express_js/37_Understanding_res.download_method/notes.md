@@ -1,0 +1,23 @@
+## res.download() Method
+
+`res.download() `in Express sends a file as a download to the client.
+
+Syntax:
+
+```javascript
+res.download(path, filename);
+```
+
+### What is does behind:
+
+    Sets Content-Disposition: attachment header.
+    Internally uses res.sendFile() to stream the file.
+    Triggers a download in the browser.
+
+### Example:
+
+```javascript
+res.download('path/to/file.pdf', 'report.pdf');
+```
+
+- Browser will download the file as report.pdf

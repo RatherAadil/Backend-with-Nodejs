@@ -1,0 +1,20 @@
+GET /favicon.ico HTTP/1.1
+Host: 10.50.206.27:4000
+Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Referer: http://10.50.206.27:4000/
+Accept-Encoding: gzip, deflate
+Accept-Language: en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7
+
+pplication/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Referer: http://127.0.0.1:5500/
+Accept-Encoding: gzip, deflate
+Accept-Language: en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7
+
+------WebKitFormBoundaryIzHDNEjscuD073eG
+Content-Disposition: form-data; name="file"; filename="num.txt"
+Content-Type: text/plain
+
+😀0123456789
+------WebKitFormBoundaryIzHDNEjscuD073eG--
