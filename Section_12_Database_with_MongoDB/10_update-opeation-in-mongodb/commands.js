@@ -1,0 +1,5 @@
+db.expenses.updateOne({title: 'Electricity bill'}, {$set: {amount: 500}})   
+db.expenses.replaceOne({title: 'Electricity bill'}, {name: 'Anurag'})                                                              
+db.expenses.updateMany({title: 'Electricity bill', currency: 'JPY'}, {$set: {amount: 1000}})
+db.expenses.findOne({_id: ObjectId('678d78869bbc3c393bcb0d1a')})
+db.expenses.updateMany({_id: ObjectId('678d78869bbc3c393bcb0d1a')}, {$set: {amount: 100000}})

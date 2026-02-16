@@ -1,0 +1,10 @@
+Key takeaway:
+
+- you can query/fetch based on the data types of the BSON data
+- example -
+
+```javascript
+db.users.find({ property: { $type: 'string' } }); // DATA TYPES ARE CASE SENSITIVE
+//or based on their numeric code as well using.
+db.users.find({ property: { $type: 2 } }); // here 2 points to "string" (refer to mongodb bson reference docs)
+```

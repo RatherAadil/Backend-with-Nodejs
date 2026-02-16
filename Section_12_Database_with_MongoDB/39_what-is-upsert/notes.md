@@ -1,0 +1,6 @@
+# Upsert
+
+    -> If the document exists → it gets updated.
+    -> If the document doesn’t exist → it gets inserted.
+    -> Use the upsert: true flag.
+    -> db.collection.updateOne(filter, update, { upsert: true });
