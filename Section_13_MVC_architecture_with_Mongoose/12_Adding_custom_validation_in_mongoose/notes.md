@@ -1,0 +1,21 @@
+# Custom Validation in Mongoose
+
+Mongoose allows custom field validation using the validate option in schemas.
+
+Syntax:
+
+```js
+    field: {
+        type: String,
+        validate: {
+            validator: function (val) { return val.length > 3; },
+            message: "Field must be longer than 3 characters."
+        }
+    }
+```
+
+Features:
+
+    * Return true if valid, false if invalid.
+    * Use props.value in error messages.
+    * Supports async validators (e.g., checking uniqueness in DB).

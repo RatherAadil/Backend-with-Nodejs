@@ -1,0 +1,16 @@
+{
+  "name": "04_introduction_to_mongoose",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "dev": "node --watch app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "mongoose": "^9.2.1"
+  }
+}

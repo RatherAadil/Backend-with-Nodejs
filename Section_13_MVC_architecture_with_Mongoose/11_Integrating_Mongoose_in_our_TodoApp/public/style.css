@@ -1,0 +1,17 @@
+li {
+  list-style: none;
+}
+.todos {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.completed {
+  text-decoration: line-through;
+}
+.items {
+  display: flex;
+  gap: 1rem;
+}

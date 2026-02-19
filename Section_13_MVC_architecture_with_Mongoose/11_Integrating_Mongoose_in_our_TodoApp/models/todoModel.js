@@ -1,0 +1,19 @@
+import { Schema, model } from 'mongoose';
+const todoSchema = new Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+    },
+    completed: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { strict: 'throw', returnDocument: 'after', runValidators: true },
+);
+
+// export default model('Todo', todoSchema);
+
+const Todo = model('Todo', todoSchema);
+export default Todo;
