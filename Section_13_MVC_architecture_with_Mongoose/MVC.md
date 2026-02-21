@@ -942,3 +942,304 @@ const user = await User.find().populate('author');
 ```
 
 Used to create relationships (like foreign keys) between collections.
+
+---
+
+# Mongoose Virtuals
+
+- Virtuals are computed properties in Mongoose documents, not stored in MongoDB.
+- Common use: derive fullName from firstName + lastName.
+- Mongoose adds an id virtual by default (string version of \_id).
+
+## Creating Virtuals
+
+We can create virtuals in multiple ways:
+
+#### 1. Add `virtuals` property in Schema configuration.
+
+```js
+{
+    strict: 'throw',
+    timestamps: true,
+    virtuals: {
+      isAdult: {
+        get() {
+          return this.age >= 18;
+        },
+      }
+    }
+}
+```
+
+- Here `isAdult` is a virtual property
+
+* We can also set the value of properties using setters
+
+```js
+ hobbiesString: {
+        get() {
+          return this.hobbies.join(', ');
+        },
+        set(value) {
+          this.hobbies = [...this.hobbies, ...value.split(', ')];
+        },
+      },
+```
+
+#### 2. Directly Using schema.virtual()
+
+- Getter only
+
+```js
+schema.virtual('fullName').get(() => ...)
+```
+
+- Getter + Setter
+
+```js
+schema.virtual('fullName').get(() => ...).set(val => ...)
+```
+
+#### 3. using alias
+
+- If we add `alias` on any property, it also becomes a virtual.
+
+```js
+name: {
+type: String,
+required: [true, 'name field is required. Please enter the name.'],
+minLength: 3,
+trim: true,
+alias: 'naam',
+},
+```
+
+- Here `naam` is a virtual.
+
+## Accessing Virtuals
+
+We can directly access a virtual with a document.
+
+```js
+const user = await User.findOne({ email: 'danish@abc.com' });
+console.log(user.isAdult;)
+```
+
+#### Enable in output
+
+- If we are using .toJSON() or .toObject() we need enable them.
+
+```js
+doc.toJSON({ virtuals: true });
+doc.toObject({ virtuals: true });
+```
+
+- To check all virtuals
+
+```js
+doc.schema.virtuals;
+```
+
+Virtuals & .lean()
+
+    -> By default, virtuals do not work with .lean().
+    -> To include them:
+    Model.find().lean({ virtuals: true })
+
+---
+
+# Custom Instance Methods
+
+- You can define document-level methods using the methods option in the schema:
+
+```js
+const userSchema = new mongoose.Schema(
+  {
+    name: String,
+  },
+  {
+    methods: {
+      getSummary() {
+        return `User: ${this.name}`;
+      },
+    },
+  },
+);
+```
+
+- this refers to the document
+- Used like: user.getSummary()
+- You can also add them manually:
+
+```js
+  userSchema.methods.getSummary = function () { ... }
+```
+
+---
+
+# Custom Static Methods
+
+You can define model-level methods using the statics option in the schema:
+
+```js
+const userSchema = new mongoose.Schema(
+  {
+    email: String,
+  },
+  {
+    statics: {
+      findByEmail(email) {
+        return this.findOne({ email });
+      },
+    },
+  },
+);
+```
+
+- this refers to the model
+- Used like: User.findByEmail("abc@example.com")
+- You can also add them manually:
+
+```js
+    userSchema.statics.findByEmail = async function (email) { ... }
+```
+
+---
+
+# Mongoose Middleware (Hooks)
+
+Mongoose middlewares (hooks) are functions that run before (pre) or after (post) certain operations like saving, querying, inserting, or aggregating.
+
+## Types of Middleware
+
+    * Document Middleware (save, validate, remove)
+        Used to modify document data (e.g., hash passwords).
+
+    * Query Middleware (find, findOne, etc.)
+        Modify or log queries (e.g., exclude inactive users).
+
+    * Model Middleware (insertMany)
+        Modify documents before/after bulk insert.
+
+    * Aggregate Middleware (aggregate)
+        Edit aggregation pipeline (e.g., exclude deleted docs).
+
+---
+
+# Mongoose Document Middleware
+
+- Document middleware (also called document hooks) are functions that run before or after actions are performed on a specific document instance.
+
+* `this` refers to the document being modified.
+
+- They let you execute logic automatically around document-level operations like saving or validating a document.
+
+* These run on individual document instances:
+
+* `save`
+* `validate`
+* `deleteOne` (when called on a document)
+
+```js
+userSchema.pre('save', function () {
+  console.log('Running my Document Middleware');
+  this.password = this.name + this.age;
+});
+userSchema.post('save', function (doc) {
+  console.log(`Your account is created and your password is : ${doc.password}`);
+});
+```
+
+- Here in post save Document middleware we get the actual document. If we inserted a document we would get that document.
+
+* In pre save Document middleware we get the next() method which we can call so that the next middleware gets executed.
+
+---
+
+# Mongoose Query Middleware
+
+- Query middleware runs on query methods like find, findOne, findOneAndUpdate etc.
+
+- pre() runs before query execution
+
+- post() runs after query execution
+
+- this inside query middleware refers to the query object
+
+```js
+userSchema.pre('find', function () {
+  this.find({ age: { $gte: 30 } });
+});
+```
+
+- Here this query middleware would only work for `find` query. Like:
+
+```js
+const user = await User.find({ name: 'Rather Aadil' });
+```
+
+- We would only get that user who has age >=30
+
+#### We can make Query middleware to work for multiple query methods:
+
+```js
+userSchema.pre(['find', 'findOne'], function () {
+  this.find({ age: { $gte: 30 } });
+});
+```
+
+- It would work for both `find()` and `findOne()`
+
+#### We can also pass the regex
+
+```js
+userSchema.pre(/^find/, function () {
+  console.log('Running my Query Middleware');
+  this.find({ age: { $gte: 30 } });
+});
+```
+
+- Now it would work for every operation starting with find
+
+#### Same goes for post()
+
+```js
+userSchema.post('find', function (doc) {
+  console.log(doc);
+  console.log('Hii');
+});
+```
+
+---
+
+# Mongoose Model Middleware
+
+- Model middleware (also called static middleware) are hooks that run before or after model-level (static) methods are executed.
+
+* Unlike document middleware (which runs on a document instance), model middleware runs on the Model itself.
+
+* Some common model middleware methods include:
+* `insertMany`
+* `bulkWrite`
+* `createCollection`
+
+Example:
+
+```js
+userSchema.pre('insertMany', function (docs) {
+  console.log('Running insertMany Model Middleware');
+  for (const doc of docs) {
+    doc.password = doc.name + doc.age;
+  }
+});
+```
+
+- Here we get the array of all the documents that were inserted. That's why we are using loop on that array to add password on each document.
+
+```js
+await User.insertMany([
+  { name: 'Zubair', age: 24, email: 'Zubair@abc.com' },
+  { name: 'Yawar', age: 20, email: 'yawar@abc.com' },
+  { name: 'Uzair', age: 18, email: 'Uzair@example.com' },
+]);
+```
