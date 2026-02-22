@@ -1243,3 +1243,77 @@ await User.insertMany([
   { name: 'Uzair', age: 18, email: 'Uzair@example.com' },
 ]);
 ```
+
+---
+
+# MongoDB Indexes
+
+Indexes in MongoDB are special data structures that improve the speed of read operations (like find, sort) by allowing MongoDB to quickly locate documents in a collection, just like an index in a book.
+
+### Why Indexes?
+
+    Without an index, MongoDB performs a collection scan—checks every document. This is slow for large datasets.
+
+## Creating Indexes in MongoDB Shell
+
+#### a) Single Field Index
+
+```js
+db.users.createIndex({ name: 1 });
+```
+
+#### b) Compound Index
+
+```js
+db.users.createIndex({ age: 1, name: -1 });
+```
+
+#### c) Unique Index
+
+```js
+db.users.createIndex({ email: 1 }, { unique: true });
+```
+
+## View Existing Indexes
+
+```js
+db.users.getIndexes();
+```
+
+## Drop an Index
+
+```js
+db.users.dropIndex('name_1');
+```
+
+---
+
+# Unique true property
+
+Used in schema to enforce unique values for a field.
+
+    * email: { type: String, unique: true }
+    * It creates a unique index.
+    * If duplicates exist, index creation fails.
+    * Clean duplicates before creating the index.
+
+## Model.init()
+
+- Ensures all indexes defined in the schema are created in the DB.
+- Useful when auto-indexing is off.
+- await User.init();
+
+### autoIndex in Mongoose
+
+- Controls whether Mongoose builds indexes automatically when the app starts.
+- Schema Level:
+
+```js
+const schema = new Schema({}, { autoIndex: false });
+```
+
+- Connection Level:
+
+```js
+mongoose.connect(uri, { autoIndex: false });
+```
