@@ -647,3 +647,23 @@ These sessions store data in a shared database, not the server.
 ## Practical Implementation of sessions
 
 - From Folder 21 to 29 we learned about guest sessions and authorized sessions (Very Important).
+
+---
+
+# TTL Index in MongoDB
+
+A TTL (Time-To-Live) index automatically deletes documents after a set time.
+
+    - Works with Date fields only
+    - Use expireAfterSeconds to set the time
+    - MongoDB deletes expired data every 60 seconds
+    - Great for sessions, OTPs, cache, and logs
+    - No alerts or logs when deletion happens
+
+- Example:
+
+```js
+db.sessions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 3600 });
+```
+
+- For more info check Folder 30.
