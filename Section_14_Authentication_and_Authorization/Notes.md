@@ -667,3 +667,13 @@ db.sessions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 3600 });
 ```
 
 - For more info check Folder 30.
+
+---
+
+# Restrict Multiple number of devices
+
+- we did it by crating the maximum of two sessions for a user and if user tries to login from 3 device the first session is removed from db, and hence the user gets logged out.
+
+# LogoutAll devices
+
+- we implemented this functionality by deleting all the sessions of that user.
