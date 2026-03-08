@@ -641,3 +641,9 @@ These sessions store data in a shared database, not the server.
 - All servers can access the same session data.
 - Works well with many servers.
 - Good for large, scalable apps.
+
+---
+
+## Practical Implementation of sessions
+
+- From Folder 21 to 29 we learned about guest sessions and authorized sessions (Very Important).
