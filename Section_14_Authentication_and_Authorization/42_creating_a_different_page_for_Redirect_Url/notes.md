@@ -1,0 +1,1 @@
+- For more information check `window.open`, `window.opener` and `window.opener.postMessage` on mdn

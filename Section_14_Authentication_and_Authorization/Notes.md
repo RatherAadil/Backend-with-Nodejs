@@ -677,3 +677,136 @@ db.sessions.createIndex({ createdAt: 1 }, { expireAfterSeconds: 3600 });
 # LogoutAll devices
 
 - we implemented this functionality by deleting all the sessions of that user.
+
+---
+
+# What is OAuth?
+
+OAuth is a way for apps to access your data without needing your password.
+For example, a new app can get your Google files without you giving it your Google password.
+
+## How It Works
+
+        -> You (the user) want to use an app that needs your data (like Google Drive files).
+        -> The app sends you to Google’s login page to ask for permission.
+        -> You log in and allow the app to access only certain data (like files or emails).
+        -> Google gives the app a special key (called an access token).
+        The app uses that key to get your data – but only what you allowed.
+
+## Why OAuth is Good
+
+        ✅ Safe – You don’t have to share your password.
+        ✅ You stay in control – You choose what the app can see.
+        ✅ You can stop access anytime from your account.
+
+---
+
+# What is OpenID Connect?
+
+- OpenID Connect (OIDC) helps apps know who the user is — like their name, email, or profile picture.
+- It works on top of OAuth 2.0, which is used to get access to data.
+  - OAuth 2.0 = What you can access
+  - OIDC = Who you are
+
+## How It Works
+
+    -> You click "Login with Google" or another provider.
+    -> You're sent to a login page (Google, etc.).
+    -> You log in and give permission.
+    -> The app gets an ID token that says who you are.
+    -> The app reads this token to get your name, email, etc.
+
+## What’s in OpenID Connect
+
+    -> ID Token = A small package (JWT) with your info.
+    -> serInfo Endpoint = An API to get more details if needed.
+    -> copes = openid, profile, email, etc., tell what info the app can get.
+
+## Why It’s Useful
+
+    ✅ Simple and safe login
+    ✅ No password sharing
+    ✅ Used by big names like Google, Microsoft
+
+---
+
+# Registering on Google Developer Console for OAuth 2.0 and OpenID Connect
+
+Follow these steps to register your application for OpenID Connect (OIDC) using Google Developer Console:
+
+### ✅ Step 1: Go to Google Cloud Console
+
+- Open: [https://console.cloud.google.com/](https://console.cloud.google.com/)
+
+### ✅ Step 2: Create or Select a Project
+
+- Click the project dropdown on the top-left.
+- Choose **"New Project"** or select an existing one.
+- Provide a **name** (e.g., `Storage App`).
+- Click **Create**.
+
+### ✅ Step 3: Configure OAuth Consent Screen
+
+- Go to **APIs & Services → OAuth consent screen**.
+- Select **"External"** (for users outside your organization).
+- Click **Create**.
+- Fill in:
+  - **App name** (e.g., `ProCodrr Login`)
+  - **User support email**
+  - **Developer contact email**
+- Optionally add branding details like a logo, privacy policy URL, etc.
+- Click **Save and Continue**.
+
+### ✅ Step 4: Create OAuth Credentials
+
+- Navigate to **APIs & Services → Credentials**.
+- Click **"Create Credentials" → "OAuth 2.0 Client ID"**.
+- Choose **Application type**: `Web application`
+- Fill in:
+  - **Name** (e.g., `Frontend OIDC`)
+  - **Authorized redirect URIs**:
+    - Example: `http://localhost:5173`
+- Click **Create**.
+
+### ✅ Step 5: Copy Your Credentials
+
+- Once created, you’ll receive:
+  - **Client ID**
+  - **Client Secret**
+- Save them securely. You'll use these in your frontend and backend code.
+
+---
+
+# Google OpenID
+
+    -> Setup openID on developer console.
+    -> Make a request to google authorization server (Login & Allow consent).
+    -> It will redirect to the client app with code (valid for few minutes).
+    -> Use that code and make a fetch request to get and Information.
+
+---
+
+# What are Grant Types in OAuth 2.0?
+
+A grant type is a way for a client to request authorization and receive tokens. It determines how the client authenticates itself and/or the user.
+
+## Common OAuth 2.0 Grant Types
+
+OAuth 2.0 defines several grant types, each designed for specific use cases and client types. Here's a comparison table summarizing the most common ones.
+
+| Grant Type                  | User Involved? | Client Type         | Use Case                         | Security Level | Notes                                                 |
+| --------------------------- | -------------- | ------------------- | -------------------------------- | -------------- | ----------------------------------------------------- |
+| `authorization_code`        | ✅ Yes         | Confidential        | Web apps with backend            | 🔐🔐🔐         | Most secure; uses `client_secret`                     |
+| `implicit` ⚠️ Deprecated    | ✅ Yes         | Public              | SPAs (legacy)                    | ❌             | Tokens in URL; now deprecated in OAuth 2.1            |
+| `authorization_code` + PKCE | ✅ Yes         | Public              | Mobile apps, SPAs                | 🔐🔐🔐         | Secure alternative for apps without `client_secret`   |
+| `client_credentials`        | ❌ No          | Confidential        | Server-to-server APIs            | 🔐🔐           | No user context; uses `client_secret`                 |
+| `password` ⚠️ Deprecated    | ✅ Yes         | First-party apps    | Legacy apps with trusted UIs     | ❌             | User gives password directly; now discouraged         |
+| `refresh_token`             | ⚠️ Partial     | Confidential/Public | Renew expired access tokens      | 🔐🔐🔐         | Issued in `authorization_code` flows                  |
+| `device_code`               | ✅ Yes         | Public              | TVs, consoles, CLI apps          | 🔐🔐           | User logs in on separate device                       |
+| `jwt_bearer` (RFC 7523)     | ⚠️ Optional    | Confidential        | Auth using signed JWT assertions | 🔐🔐🔐         | Often used in service accounts / backend integrations |
+
+---
+
+# Problem with implicit Grant Type Flow
+
+- The issue with this is that when we login using implicit grant type the id_token is accessed via frontEnd and the id_token remains in the URL of the page, and hence in the history. If the hacker gets access to the history he could just use that url and login without anything.
