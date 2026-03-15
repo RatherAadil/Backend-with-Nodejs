@@ -2,6 +2,7 @@ import express from 'express';
 import checkAuth from '../middlewares/authMiddleware.js';
 import {
   createUser,
+  getAllUsers,
   getUserDetails,
   login,
   logout,
@@ -10,11 +11,12 @@ import {
 
 const router = express.Router();
 
-router.post('/register', createUser);
+router.post('/user/register', createUser);
 
-router.post('/login', login);
+router.post('/user/login', login);
 
-router.get('/', checkAuth, getUserDetails);
-router.post('/logout', logout);
-router.post('/logout-all', checkAuth, logoutAll);
+router.get('/user', checkAuth, getUserDetails);
+router.get('/users', checkAuth, getAllUsers);
+router.post('/user/logout', logout);
+router.post('/user/logout-all', checkAuth, logoutAll);
 export default router;

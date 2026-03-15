@@ -117,3 +117,20 @@ export const getUserDetails = (req, res) => {
     picture: user.picture,
   });
 };
+export const getAllUsers = async (req, res) => {
+  const allUsers = await User.find().select('name email').lean();
+  const allSessions = await Session.find().select('userId').lean();
+
+  const allSessionsUserIdSet = new Set(
+    allSessions.map((s) => s.userId.toString()),
+  );
+
+  const transformedUsers = allUsers.map(({ _id, name, email }) => ({
+    id: _id,
+    name,
+    email,
+    isLoggedIn: allSessionsUserIdSet.has(_id.toString()),
+  }));
+
+  return res.status(200).json(transformedUsers);
+};

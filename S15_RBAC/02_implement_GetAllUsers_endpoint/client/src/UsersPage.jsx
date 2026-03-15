@@ -1,14 +1,25 @@
 import { useState } from 'react';
 import './UsersPage.css';
+import { useEffect } from 'react';
 
-const dummyUsers = [
-  { id: 1, name: 'John Doe', email: 'john@example.com', isLoggedIn: true },
-  { id: 2, name: 'Jane Smith', email: 'jane@example.com', isLoggedIn: true },
-  { id: 3, name: 'Mark Taylor', email: 'mark@example.com', isLoggedIn: false },
-];
+const BASE_URL = 'http://localhost:4000';
 
 export default function UsersPage() {
-  const [users, setUsers] = useState(dummyUsers);
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+      const response = await fetch(`${BASE_URL}/users`, {
+        headers: {
+          'content-type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      const data = await response.json();
+      setUsers(data);
+    };
+    fetchAllUsers();
+  }, []);
 
   const logoutUser = (userId) => {
     alert(`Logging out user with ID: ${userId}`);
@@ -32,7 +43,7 @@ export default function UsersPage() {
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
+          {users?.map((user) => (
             <tr key={user.id}>
               <td>{user.name}</td>
               <td>{user.email}</td>
