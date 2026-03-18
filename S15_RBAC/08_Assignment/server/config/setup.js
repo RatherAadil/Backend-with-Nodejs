@@ -44,6 +44,15 @@ try {
           isDeleted: {
             bsonType: 'bool',
           },
+          isManualLogin: {
+            bsonType: 'bool',
+          },
+          isSocialLogin: {
+            bsonType: 'bool',
+          },
+          socialProvider: {
+            bsonType: 'string',
+          },
           __v: {
             bsonType: 'int',
           },

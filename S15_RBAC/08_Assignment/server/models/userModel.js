@@ -30,12 +30,23 @@ const userSchema = Schema(
     },
     role: {
       type: String,
-      enum: ['Admin', 'Manager', 'User','Owner'],
+      enum: ['Admin', 'Manager', 'User', 'Owner'],
       default: 'User',
     },
     isDeleted: {
       type: Boolean,
       default: false,
+    },
+    isManualLogin: {
+      type: Boolean,
+      default: false,
+    },
+    isSocialLogin: {
+      type: Boolean,
+      default: false,
+    },
+    socialProvider: {
+      type: String,
     },
   },
   {

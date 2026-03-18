@@ -3,7 +3,12 @@ import Directory from '../../models/directoryModel.js';
 import Session from '../../models/sessionsModel.js';
 import User from '../../models/userModel.js';
 
-export const registerWithSocialService = async ({ name, email, picture }) => {
+export const registerWithSocialService = async ({
+  name,
+  email,
+  picture,
+  socialProvider,
+}) => {
   const session = await mongoose.startSession();
   try {
     const rootDirId = new mongoose.Types.ObjectId();
@@ -15,7 +20,15 @@ export const registerWithSocialService = async ({ name, email, picture }) => {
       { session },
     );
     await User.insertOne(
-      { _id: userId, name, email, picture, rootDirId },
+      {
+        _id: userId,
+        name,
+        email,
+        picture,
+        rootDirId,
+        isSocialLogin: true,
+        socialProvider,
+      },
       { session },
     );
     const newSession = await Session.insertOne({ userId }, { session });

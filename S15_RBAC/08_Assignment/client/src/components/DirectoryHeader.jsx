@@ -7,7 +7,7 @@ import {
   FaSignOutAlt,
   FaSignInAlt,
 } from 'react-icons/fa';
-
+import { IoIosSettings } from 'react-icons/io';
 function DirectoryHeader({
   directoryName,
   onCreateFolderClick,
@@ -166,7 +166,25 @@ function DirectoryHeader({
           multiple
           onChange={handleFileSelect}
         />
-
+        {(userRole === 'Admin' ||
+          userRole === 'Manager' ||
+          userRole === 'Owner') && (
+          <div className='user-menu-item ' onClick={() => navigate('/users')}>
+            <FaUser
+              className='menu-item-icon'
+              title='Users'
+              style={{ marginTop: '12px', marginRight: '15px' }}
+            />
+          </div>
+        )}
+        <button
+          className='icon-button'
+          title='Create Folder'
+          onClick={() => navigate('/settings')}
+          disabled={disabled}
+        >
+          <IoIosSettings />
+        </button>
         {/* User Icon & Dropdown Menu */}
         <div className='user-menu-container' ref={userMenuRef}>
           <div
@@ -187,17 +205,6 @@ function DirectoryHeader({
                     <span className='user-email'>{userEmail}</span>
                   </div>
                   <div className='user-menu-divider' />
-                  {(userRole === 'Admin' ||
-                    userRole === 'Manager' ||
-                    userRole === 'Owner') && (
-                    <div
-                      className='user-menu-item login-btn'
-                      onClick={() => navigate('/users')}
-                    >
-                      <FaUser className='menu-item-icon' />
-                      <span>Users</span>
-                    </div>
-                  )}
                   <div
                     className='user-menu-item login-btn'
                     onClick={handleLogout}

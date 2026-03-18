@@ -43,6 +43,7 @@ export const loginWithGoogle = async (req, res, next) => {
         name,
         email,
         picture,
+        socialProvider: 'google',
       });
       res.cookie('sId', sessionId, {
         httpOnly: true,
@@ -126,6 +127,7 @@ export const loginWithGithub = async (req, res, next) => {
         name,
         email,
         picture,
+        socialProvider: 'github',
       });
       res.cookie('sId', sessionId, {
         httpOnly: true,

@@ -1,6 +1,7 @@
 import express from 'express';
 import checkAuth from '../middlewares/authMiddleware.js';
 import {
+  changePassword,
   changeRole,
   createUser,
   getAllUsers,
@@ -11,7 +12,9 @@ import {
   logoutAll,
   logoutUser,
   restoreUser,
+  setting,
   softDeleteUser,
+  udpatePassword,
 } from '../Controllers/userController.js';
 import { isDeletedUser } from '../middlewares/isDeletedUserMiddleware.js';
 import { authorize } from '../middlewares/authorizeMiddleware.js';
@@ -27,6 +30,9 @@ router.post('/user/login', isDeletedUser, login);
 router.get('/user', checkAuth, isDeletedUser, getUserDetails);
 router.post('/user/logout', logout);
 router.post('/user/logout-all', checkAuth, logoutAll);
+router.get('/user/setting', checkAuth, isDeletedUser, setting);
+router.patch('/user/changePassword', checkAuth, isDeletedUser, changePassword);
+router.patch('/user/updatePassword', checkAuth, isDeletedUser, udpatePassword);
 
 //admin routes
 router.get('/users', checkAuth, authorize('users:read'), getAllUsers);

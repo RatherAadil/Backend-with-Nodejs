@@ -225,9 +225,8 @@ export default function UsersPage() {
                       setError(null);
                     }}
                   >
-                    <div>Choose Role</div>
-
-                    {openMenuId === user.id && (
+                    Choose Role
+                    {openMenuId === user.id && user.role !== userRole && (
                       <div className='user-menu'>
                         {roleOptions[userRole].map((opt) => (
                           <div

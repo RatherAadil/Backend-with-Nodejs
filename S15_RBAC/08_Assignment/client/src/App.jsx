@@ -5,6 +5,7 @@ import Register from './Register';
 import './App.css';
 import Login from './Login';
 import UsersPage from './UsersPage';
+import Settings from './Settings';
 
 const router = createBrowserRouter([
   {
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
   {
     path: '/users',
     element: <UsersPage />,
+  },
+  {
+    path: '/settings',
+    element: <Settings />,
   },
   {
     path: '/directory/:dirId',

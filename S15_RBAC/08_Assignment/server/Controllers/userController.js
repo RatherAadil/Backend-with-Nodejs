@@ -39,6 +39,7 @@ export const createUser = async (req, res, next) => {
         email,
         password,
         rootDirId,
+        isManualLogin: true,
       },
       { session },
     );
@@ -120,6 +121,95 @@ export const getUserDetails = (req, res) => {
     role: user.role,
   });
 };
+
+export const setting = async (req, res, next) => {
+  const user = req.user;
+  try {
+    const {
+      name,
+      email,
+      picture,
+      isManualLogin,
+      isSocialLogin,
+      socialProvider,
+    } = user;
+    const resData = {
+      success: true,
+      data: {
+        name,
+        email,
+        picture,
+        isManualLogin,
+        isSocialLogin,
+        ...(isSocialLogin && { socialProvider }),
+      },
+    };
+    return res.status(201).json(resData);
+  } catch (err) {
+    next(err);
+  }
+};
+export const changePassword = async (req, res, next) => {
+  const user = req.user;
+  const { newPassword, confirmPassword } = req.body;
+  try {
+    if (!newPassword || !confirmPassword) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ error: 'Passwords do not match.' });
+    }
+
+    user.password = newPassword;
+    user.isManualLogin = true;
+    await user.save();
+
+    return res.status(201).json({ message: 'Password changed successfully' });
+  } catch (err) {
+    next(err);
+  }
+};
+export const udpatePassword = async (req, res, next) => {
+  const user = req.user;
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+  try {
+    if (!newPassword || !confirmPassword || !currentPassword) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+    const isValidPassword = await user.comparePassword(currentPassword);
+
+    if (!isValidPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Incorrect current password',
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'password did not match',
+      });
+    }
+    if (newPassword === currentPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password cannot be same as current password',
+      });
+    }
+
+    user.password = newPassword;
+    user.isManualLogin = true;
+    await user.save();
+
+    return res
+      .status(201)
+      .json({ success: true, message: 'Password changed successfully' });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getAllUsers = async (req, res, next) => {
   const userRole = req.user.role;
   try {
