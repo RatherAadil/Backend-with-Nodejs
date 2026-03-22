@@ -149,7 +149,7 @@ export const setting = async (req, res, next) => {
     next(err);
   }
 };
-export const changePassword = async (req, res, next) => {
+export const setPasswordForManualLogin = async (req, res, next) => {
   const user = req.user;
   const { newPassword, confirmPassword } = req.body;
   try {
@@ -318,6 +318,31 @@ export const changeRole = async (req, res, next) => {
     user.role = newRole;
     await user.save();
     return res.status(200).json({ message: 'Role changed successfully' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+//File sharing
+export const searchUserByEmail = async (req, res, next) => {
+  const { email } = req.query;
+  if (!email) return res.status(400).json({ message: 'Email not included' });
+  try {
+    const targetUser = await User.findOne({ email })
+      .select('name email picture')
+      .lean();
+    if (!targetUser) {
+      return res.status(404).json({ message: 'User does not exist' });
+    }
+    return res.status(200).json({
+      success: true,
+      data: {
+        _id: targetUser._id,
+        name: targetUser.name,
+        email: targetUser.email,
+        picture: targetUser.picture,
+      },
+    });
   } catch (err) {
     next(err);
   }

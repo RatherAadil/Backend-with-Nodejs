@@ -17,3 +17,5 @@ export const PERMISSIONS = {
   ],
   Owner: ['*'],
 };
+
+export const VALID_RESOURCE_PERMISSIONS = ['viewer', 'editor'];

@@ -114,6 +114,12 @@ try {
           userId: {
             bsonType: 'objectId',
           },
+          sharedViaLink: {
+            bsonType: 'object',
+          },
+          sharedWith: {
+            bsonType: 'array',
+          },
           __v: {
             bsonType: 'int',
           },

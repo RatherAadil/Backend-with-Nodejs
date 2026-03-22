@@ -17,7 +17,7 @@ export default async function checkAuth(req, res, next) {
       .status(401)
       .json({ error: 'No active session found', success: false });
   }
-
+  
   const user = await User.findOne({ _id: session.userId });
   if (!user) {
     return res
