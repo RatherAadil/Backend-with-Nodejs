@@ -260,3 +260,208 @@ DEL name
 ```
 
 For a full reference, visit the [official Redis documentation](https://redis.io/commands/#string).
+
+---
+
+# Redis Expiry Commands
+
+Redis allows setting expiry (TTL – Time To Live) for keys of any type, including strings. These commands can be categorized based on **when** you apply the expiry:
+
+## 🟢 While Setting the Key
+
+These commands **set the key and expiry in one step**.
+
+### 🔹 `SET key value EX seconds`
+
+Sets a string value and sets the expiration in seconds.
+
+```bash
+SET myKey "data" EX 60
+```
+
+### 🔹 `SET key value PX milliseconds`
+
+Sets a string value and sets the expiration in milliseconds. The `P` stands for "precise" or "point-in-time".
+
+```bash
+SET myKey "data" PX 1500
+```
+
+### 🔹 `SETEX key seconds value`
+
+Legacy version of `SET ... EX`. Only works with strings.
+
+```bash
+SETEX myKey 60 "data"
+```
+
+### 🔹 `PSETEX key milliseconds value`
+
+Legacy version of `SET ... PX`. Only works with strings.
+
+```bash
+PSETEX myKey 1500 "data"
+```
+
+## 🔵 After the Key is Already Set
+
+These commands **add or modify the expiry** of an existing key (any data type).
+
+### 🔹 `EXPIRE key seconds`
+
+Sets expiry in seconds.
+
+```bash
+EXPIRE myKey 60
+```
+
+### 🔹 `PEXPIRE key milliseconds`
+
+Sets expiry in milliseconds.
+
+```bash
+PEXPIRE myKey 1500
+```
+
+### 🔹 `EXPIREAT key timestamp`
+
+Sets expiry using a Unix timestamp (in seconds).
+
+```bash
+EXPIREAT myKey 1716459200
+```
+
+### 🔹 `PEXPIREAT key milliseconds_timestamp`
+
+Sets expiry using a Unix timestamp (in milliseconds).
+
+```bash
+PEXPIREAT myKey 1716459200000
+```
+
+### 🔹 `TTL key`
+
+Checks the time-to-live of a key (in seconds).
+
+```bash
+TTL myKey
+```
+
+### 🔹 `PTTL key`
+
+Checks the time-to-live of a key (in milliseconds).
+
+```bash
+PTTL myKey
+```
+
+### 🔹 `PERSIST key`
+
+Removes the expiry from a key, making it persistent.
+
+```bash
+PERSIST myKey
+```
+
+These commands work for **strings, hashes, lists, sets, sorted sets**, and all Redis key types.
+
+For more info, visit the [Redis Expiration Documentation](https://redis.io/docs/latest/commands/expire/).
+
+---
+
+# Redis Database Management
+
+View Total Databases
+
+       CONFIG GET databases – Shows how many databases are configured (default is 16).
+
+Switch Between Databases
+
+       SELECT index – Switch to a database (e.g., SELECT 1 for DB 1).
+       Databases are numbered from 0 to 15 by default.
+
+Count Keys in a Database
+
+      DBSIZE – Shows the number of keys in the current DB.
+      redis-cli -n 2 DBSIZE – Check keys in a specific DB (DB 2 here).
+
+Change Number of Databases
+
+      Edit redis.conf:
+
+      databases 4
+
+      Limits Redis to databases 0–3.
+
+Key Tips
+
+- Only numbered databases (no names).
+- All DBs share the same memory.
+- No memory tracking per DB.
+
+---
+
+# 🗂️ Redis Key Namespacing
+
+In Redis, **key namespacing** is a convention used to logically organize and group keys. Since Redis stores all keys in a flat keyspace (like a big global dictionary), it's up to the developer to structure key names in a meaningful way.
+
+## 🔑 What is Key Namespacing?
+
+Key namespacing is the practice of **prefixing keys** with a category or group name, typically separated by a colon `:`. This helps you:
+
+- Organize data logically
+- Avoid key collisions
+- Enable efficient data access and cleanup
+
+### 🔧 Common Pattern
+
+```txt
+<namespace>:<subcategory>:<identifier>
+```
+
+### 📌 Example
+
+```txt
+user:1001:name       # Name of user with ID 1001
+user:1001:email      # Email of user with ID 1001
+cart:1001:items      # Cart items of user 1001
+session:abc123       # Session data
+```
+
+## 🎯 Benefits of Namespacing
+
+| Benefit            | Description                                                    |
+| ------------------ | -------------------------------------------------------------- |
+| Organization       | Groups related keys together                                   |
+| Easier Debugging   | Helps in inspecting keys in the CLI                            |
+| Efficient Deletion | You can easily delete a group using `SCAN` + `DEL`             |
+| Avoid Collisions   | Prevents accidental overwriting of keys from different domains |
+
+## 🔍 Usage with Commands
+
+### 🔹 Get all keys under a namespace
+
+```bash
+KEYS user:*
+```
+
+### 🔹 Delete all keys under a namespace (use with care)
+
+```bash
+SCAN 0 MATCH user:* COUNT 100
+DEL <matched keys>
+```
+
+In practice, use `SCAN` to avoid blocking Redis in production environments.
+
+## 💡 Best Practices
+
+- Use clear, consistent prefixes (e.g., `user:`, `cart:`, `session:`)
+- Use colons `:` as separators — this is a common Redis convention
+- Don’t overuse deeply nested namespaces
+- Use short, meaningful namespaces
+
+## 🚫 Limitations
+
+- Namespacing is **manual** — Redis doesn’t enforce it
+- Requires discipline and consistency in your application code
