@@ -721,3 +721,288 @@ await redisClient.ft.dropIndex('ageIdx', { DD: true });
 -> Run Redis commands with Redis: Open Terminal
 -> View and edit JSON with tree view
 -> Supports: RedisJSON, RediSearch, and more.
+
+---
+
+# Fuzzy search
+
+- Fuzzy search = approximate string matching
+- matches words even with typos / small edits
+
+Example
+
+```bash
+FT.SEARCH cityIdx "%banglore%"
+```
+
+Matches: bangalore, banglore, bangalor
+
+### Used for:
+
+User input, Typos, Search bars, Names, cities, products
+
+### Exact OR search
+
+Example 1:
+
+```bash
+FT.SEARCH cityIdx "@city:{pune|delhi}"
+```
+
+- {} → TAG match
+- | → OR
+- return Exact matches, ordered, fast
+
+Example 2:
+
+```bash
+FT.SEARCH cityIdx "@city:"-pune|delhi"
+```
+
+return all matches excluding these two
+
+### why and what to use when?
+
+- TAG → filtering (cities, status, category)
+- TEXT → searching (names, descriptions)
+- Fuzzy → forgiveness, not logic
+
+## What is pagination?
+
+Pagination = returning data in small chunks (pages) instead of everything at once.
+
+Exapmle: `OFFSET 20 LIMIT 10`
+
+- Prefix match
+
+```bash
+FT.SEARCH cityIdx "@city:pun\*"
+```
+
+Matches any city that starts with pun.
+
+## Nodejs
+
+```js
+// Node.js equivalents of Redis Search commands
+import { createClient } from 'redis';
+
+const client = createClient();
+await client.connect();
+
+// 🔎 Fuzzy Search (Approximate Matching)
+await client.ft.search('userIdx', '%Kumar%');
+
+// 🌠 Search by Any Word (Logical OR)
+await client.ft.search('userIdx', 'Bhupesh|Sahil');
+
+// 📃 Paging Results (Pagination)
+await client.ft.search('userIdx', 'Delhi', {
+  LIMIT: {
+    from: 10,
+    size: 5,
+  },
+});
+
+// 🚫 Excluding Words from Search
+await client.ft.search('userIdx', '-Sanat');
+
+// 🔠 Partial Word Search
+// Prefix Match
+await client.ft.search('userIdx', 'Kum*');
+
+// Suffix Match
+await client.ft.search('userIdx', '*mar');
+
+// Specific Suffix Match
+await client.ft.search('userIdx', '*maar');
+
+// Disconnect when done
+await client.quit();
+```
+
+---
+
+# SCAN Command in Redis
+
+The `SCAN` command in Redis is used to **incrementally iterate** over a collection of keys in the database without blocking (asynchronously) the server.
+
+## Using SCAN in Redis CLI
+
+```bash
+SCAN <cursor> [MATCH pattern] [COUNT count]
+```
+
+- **Default MATCH**: `*` (matches all keys)
+- **Default COUNT**: `10` (approximate number of keys per batch)
+
+### Example
+
+```bash
+SCAN 0 MATCH user:* COUNT 10
+```
+
+### Explanation
+
+- `0` – initial cursor
+- `MATCH user:*` – filter keys starting with `user:`
+- `COUNT 10` – request up to 10 keys per batch (not guaranteed)
+
+### Full Scan Loop (Manual)
+
+Repeat the command using the cursor returned by the previous call until the cursor returned is `0`:
+
+```bash
+SCAN 0
+SCAN 25
+SCAN 97
+... until cursor is 0
+```
+
+## Using SCAN in Node.js (Official `redis` Module)
+
+```js
+import { createClient } from 'redis';
+
+const client = createClient();
+await client.connect();
+```
+
+### SCAN with Loop
+
+```js
+let cursor = 0;
+do {
+  const { cursor: nextCursor, keys } = await client.scan(cursor, {
+    MATCH: '*',
+    COUNT: 10,
+  });
+
+  console.log('Found keys:', keys);
+  cursor = nextCursor;
+} while (cursor !== 0);
+```
+
+### Output
+
+Logs all keys in batches of up to 10 until the scan is complete.
+
+## Notes
+
+- `SCAN` is **non-blocking** and safe for large datasets.
+- Always combine with `MATCH` to avoid scanning the entire keyspace unnecessarily.
+- The `COUNT` is a **hint**, not a strict limit.
+- If `MATCH` and `COUNT` are not provided, Redis uses:
+  - `MATCH *` as the default pattern
+  - `COUNT 10` as the default batch size
+
+## ✅ Use Cases
+
+- Cleaning up old or expired keys.
+- Migrating or exporting subsets of data.
+- Analyzing or monitoring key patterns.
+
+---
+
+# Keys vs Scan Command in Redis
+
+In Redis, both `KEYS` and `SCAN` commands are used to search for keys. However, they are designed for very different purposes and have important performance and safety implications.
+
+## `KEYS` Command
+
+### Description:
+
+- Returns **all keys** matching a given pattern.
+- Example:
+
+  ```bash
+  KEYS user:*
+  ```
+
+### ✅ Pros:
+
+- Simple to use.
+- Good for **development** and **small datasets**.
+
+### ❌ Cons:
+
+- **Blocks the Redis server** while scanning all keys.
+- Not safe in production for large datasets.
+- Can cause significant performance issues.
+
+### ⚠️ Use Case:
+
+- Only in **development** or when you are absolutely sure the dataset is small.
+
+## `SCAN` Command
+
+### Description:
+
+- Iteratively scans keys in **small batches** using a cursor.
+- Non-blocking and safe for production.
+- Example:
+
+  ```bash
+  SCAN 0 MATCH user:* COUNT 10
+  ```
+
+### ✅ Pros:
+
+- **Non-blocking**, does not freeze Redis.
+- Can be used safely in **production environments**.
+- Allows partial, incremental scans.
+
+### ❌ Cons:
+
+- Requires cursor management (`do...while` or loop).
+- Returns **partial results** per call (you must loop until cursor is `0`).
+
+### ✅ Use Case:
+
+- Scanning keys in **production**.
+- Cleaning up expired or orphaned keys.
+- Exporting or analyzing subsets of data.
+
+## Final Recommendation
+
+> Use `KEYS` only in controlled environments or development.
+
+> Always prefer `SCAN` for safe, scalable key iteration in production systems.
+
+---
+
+# Redis Lists Datatype
+
+A **Redis List** is an **ordered collection of strings**. It acts like a **linked list** and supports operations from both the **head (left)** and **tail (right)** ends.
+
+You can use lists to implement any kind of queues and stacks.
+
+### Common Commands:
+
+```
+    LPUSH mylist "a" → Add to left
+    RPUSH mylist "b" → Add to right
+    LPOP mylist → Remove from left
+    RPOP mylist → Remove from right
+    LRANGE mylist 0 -1 → Get all items
+    LLEN mylist → List length
+    LINDEX mylist 0 → Get item at inde
+    LREM mylist 1 "a" → Remove item(s)
+    LTRIM mylist 0 2 → Keep only index 0 to 2
+```
+
+## Node.js commands:
+
+```js
+await client.lPush('tasks', 'task1'); //-> it creates key named tasks and enter first value task1
+
+await client.rPush('tasks', 'task2', 'task3'); //-> pushes from right
+
+await client.lRange('tasks', 0, -1); //-> returns all tasks array
+
+await client.lPop('tasks'); //-> pops from left
+
+await client.rPop('tasks'); //-> pops from right
+
+await client.lLen('tasks'); //-> return length of array
+```
