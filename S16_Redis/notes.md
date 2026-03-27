@@ -1070,3 +1070,371 @@ Common Commands
     HVALS userHash → List all values
     HINCRBY userHash age 1 → Increment a number field
 ```
+
+---
+
+# Pub/Sub in Computer Science and Redis
+
+## What is Pub/Sub?
+
+**Pub/Sub (Publish/Subscribe)** is a messaging pattern where:
+
+- **Publishers** send messages to a channel.
+- **Subscribers** listen to specific channels and receive messages automatically.
+- Publishers and subscribers are **decoupled** (they don’t know about each other).
+
+This model is useful for building **event-driven**, **real-time**, and **distributed systems**.
+
+## Use Cases of Pub/Sub
+
+- **Chat applications** (e.g., chat rooms)
+- **Notification systems** (e.g., send alerts to users)
+- **Real-time analytics** (e.g., logs, stock data)
+- **IoT device communication**
+- **Microservices communication** (loosely coupled systems)
+
+## Redis Pub/Sub Concepts
+
+- Redis provides a lightweight Pub/Sub implementation.
+- Messages are **not persisted** — subscribers must be connected to receive them.
+- Uses **TCP connections** to deliver messages.
+
+## 🔹 Redis Pub/Sub Commands
+
+### ▶ SUBSCRIBE
+
+Subscribe to a channel.
+
+```bash
+SUBSCRIBE cli_channel
+```
+
+### ▶ PUBLISH
+
+Send a message to all subscribers of a channel.
+
+```bash
+PUBLISH cli_channel "Hello World"
+```
+
+### ▶ UNSUBSCRIBE
+
+Stop listening to a channel.
+
+```bash
+UNSUBSCRIBE cli_channel
+```
+
+## 🔹 Using Redis Pub/Sub in Node.js (Official Library)
+
+### Step 1: Connect and Use Pub/Sub
+
+```js
+const { createClient } = require('redis');
+
+// Publisher client
+const redisClient = createClient();
+await redisClient.connect();
+
+// Subscribe to a channel
+await redisClient.subscribe('cli_channel', (message) => {
+  console.log('Received:', message);
+});
+
+// Publish a message
+await redisClient.publish('node_channel', 'Hello from publisher');
+```
+
+### 🔄 Notes
+
+- You must use **separate Redis connections** for publishing and subscribing.
+- Subscriptions are blocking; the client stays in listening mode.
+
+---
+
+# Enabling Password-Based Authentication in Redis
+
+By default, Redis does **not require a password**, which can be risky in production environments. Enabling password-based authentication helps secure your Redis server from unauthorized access.
+
+## Step-by-Step: Enable Redis Authentication
+
+### 1. Open the Redis Configuration File
+
+Use the following command to edit the Redis config file:
+
+```bash
+sudo nano /etc/redis/redis.conf
+```
+
+> 📝 `nano` is a simple terminal-based text editor. You can use `vim` or `gedit` if you prefer.
+
+### 2. Find the `requirepass` Setting
+
+Inside the config file, search (Ctrl + W) for this line:
+
+```conf
+# requirepass foobared
+```
+
+Uncomment it and set your desired password:
+
+```conf
+requirepass yourStrongPassword123
+```
+
+### 3. Save and Exit
+
+- In `nano`, press `Ctrl + X`, then `Y`, then `Enter` to save and exit.
+
+### 4. Restart Redis Server
+
+```bash
+sudo service redis-server restart
+# Or use this if the above doesn't work:
+sudo systemctl restart redis-server
+```
+
+## ✅ How to Authenticate in Redis CLI
+
+Once authentication is enabled, you must use the `AUTH` command:
+
+```bash
+AUTH yourStrongPassword123
+```
+
+If successful, you'll see:
+
+```
+OK
+```
+
+## Authenticate in Nodejs
+
+```js
+import { createClient } from 'redis';
+
+const redisClient = createClient();
+await redisClient.connect();
+
+await redisClient.auth({ password: 'admin@123' }); //helps to authenticate the password, to set a password we need to follow the above steps
+
+const result = await redisClient.ping();
+console.log(result);
+
+await redisClient.quit();
+```
+
+### Note:
+
+- `In order to create multiple users in redis db , check ACL (access control list) on redis website.`
+
+---
+
+# Redis Eviction Policy Explained
+
+An **eviction policy** in Redis determines **which keys to remove** from memory **when the maximum memory limit is reached**. Redis uses these policies to make room for new data when operating within a memory-constrained environment.
+
+By default, Redis has **no memory limit** set and thus **no eviction happens**, which may lead to memory overuse unless configured explicitly.
+
+## How to Check Current Max Memory Limit
+
+### Redis CLI Command:
+
+```bash
+CONFIG GET maxmemory
+```
+
+### Output:
+
+```
+1) "maxmemory"
+2) "0"
+```
+
+A value of `0` means **no memory limit is set**.
+
+## How to Set Max Memory and Eviction Policy
+
+### ✅ Option 1: Set via Redis Config File
+
+1. **Open your redis.conf file:**
+
+   ```bash
+   sudo nano /etc/redis/redis.conf
+   ```
+
+2. **Locate and modify/add these lines:**
+
+   ```conf
+   maxmemory 100mb
+   maxmemory-policy allkeys-lru
+   ```
+
+3. **Save and restart Redis:**
+
+   ```bash
+   sudo service redis-server restart
+   # Or for some systems:
+   sudo systemctl restart redis-server
+   ```
+
+### ✅ Option 2: Set at Runtime (Temporary)
+
+Run these commands in the Redis CLI:
+
+```bash
+CONFIG SET maxmemory 100mb
+CONFIG SET maxmemory-policy allkeys-lru
+```
+
+> 🔁 Note: These runtime changes are **not persistent** and will be lost after a Redis restart.
+
+## Common Redis Eviction Policies
+
+| Policy            | Description                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| `noeviction`      | Default. Returns an error when memory is full.                |
+| `allkeys-lru`     | Evicts least recently used (LRU) key from all keys.           |
+| `volatile-lru`    | Evicts least recently used (LRU) key from keys with expiry.   |
+| `allkeys-random`  | Removes a random key from all keys.                           |
+| `volatile-random` | Removes a random key from keys with expiry.                   |
+| `volatile-ttl`    | Evicts keys with the nearest expiration time.                 |
+| `allkeys-lfu`     | Evicts least frequently used (LFU) key from all keys.         |
+| `volatile-lfu`    | Evicts least frequently used (LFU) key from keys with expiry. |
+
+> **LRU** = Least Recently Used
+
+> **LFU** = Least Frequently Used
+
+## What Happens If `maxmemory-policy` is Set to `noeviction`?
+
+When `maxmemory-policy` is set to `noeviction` (which is the default), Redis **will not remove any keys** when the memory limit is reached.
+
+Instead:
+
+- Redis **refuses to accept new write operations** that require more memory.
+- It throws an **OOM (Out Of Memory) error**:
+
+  ```
+  (error) OOM command not allowed when used memory > 'maxmemory'.
+  ```
+
+- Read operations will still succeed.
+
+This is useful when you want **strict control over key deletion**, but it requires careful memory monitoring.
+
+## Final Tips
+
+- Use `INFO memory` to check memory usage.
+- Combine `maxmemory` with a suitable eviction policy for best performance.
+- Persistent changes go in `redis.conf`; runtime changes are for temporary testing.
+
+---
+
+# 🔄 More Redis Topics to Explore
+
+After completing the main Redis section, here are some additional advanced topics students can explore to deepen their understanding of Redis:
+
+## 🧵 1. Multi Commands
+
+Redis `MULTI` allows you to execute a group of commands in a single transaction. All commands queued after `MULTI` are executed atomically with `EXEC`.
+
+### Example using Node.js (official `redis` library):
+
+```js
+const multi = redisClient.multi();
+multi.set('key1', 'value1');
+multi.set('key2', 'value2');
+const results = await multi.exec();
+console.log(results);
+```
+
+Useful when you want to make sure a series of operations happen without interruption.
+
+## 🔗 2. Pipelining
+
+Pipelining sends multiple commands to Redis without waiting for the reply of the previous one. This reduces network round trips and improves performance.
+
+```js
+const pipeline = redisClient.pipeline();
+pipeline.set('key1', 'value1');
+pipeline.set('key2', 'value2');
+pipeline.set('key3', 'value3');
+pipeline.exec();
+```
+
+- Improves performance.
+- Not atomic.
+- Can be combined with `MULTI` if atomicity is needed inside a pipeline.
+
+## 🔣 3. Redis Serialization Protocol (RESP)
+
+RESP is the format Redis uses to communicate between the client and server. It defines how commands and their replies are encoded:
+
+- Simple Strings start with `+`
+- Errors start with `-`
+- Integers start with `:`
+- Bulk Strings start with `$`
+- Arrays start with `*`
+
+Example:
+
+```
+*2
+$3
+GET
+$3
+key
+```
+
+## 🧘 4. Redis OM (Object Mapping)
+
+Redis OM is a library that provides object mapping for Redis, allowing you to work with Redis data like you would with an ORM.
+
+Supports:
+
+- Schemas for Redis hashes
+- Full-text search
+- Indexing
+
+Available for JavaScript, Python, and other languages.
+
+## 🌐 5. Globbing Patterns
+
+Redis supports glob-style pattern matching for commands like `KEYS` and `SCAN`:
+
+- `*` matches any number of characters
+- `?` matches a single character
+- `[abc]` matches one character in the set
+
+Example:
+
+```bash
+KEYS user:*
+```
+
+Use carefully, especially `KEYS` in production.
+
+## 💾 6. Saving Computed Values in Redis
+
+Redis is often used to cache the result of expensive computations or database queries.
+
+Steps:
+
+1. Check if value exists in Redis
+2. If not, compute and store in Redis
+3. Return the value
+
+Example:
+
+```js
+const cached = await redis.get('expensive:data');
+if (!cached) {
+  const data = await computeExpensiveStuff();
+  await redis.set('expensive:data', data);
+}
+```
+
+This improves performance and reduces load on backend services.
+
+These topics are valuable for building efficient, scalable, and production-ready Redis-powered applications.
