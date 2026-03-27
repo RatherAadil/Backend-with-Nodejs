@@ -709,3 +709,15 @@ await redisClient.ft.dropIndex('nameIdx');
 // 🔹 Drop Index and Delete Documents
 await redisClient.ft.dropIndex('ageIdx', { DD: true });
 ```
+
+---
+
+# Redis extension for vscode
+
+-> Install: Search “Redis” (by Redis Inc.) in VS Code extensions.
+-> Connect: Add host (localhost:6379) and optional password.
+-> Features:
+-> Browse and edit keys (JSON, strings, hashes, etc.)
+-> Run Redis commands with Redis: Open Terminal
+-> View and edit JSON with tree view
+-> Supports: RedisJSON, RediSearch, and more.
