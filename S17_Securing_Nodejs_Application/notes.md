@@ -251,3 +251,69 @@ if (sanitizeData.success) {
   console.log(sanitizeData.error.issues);
 }
 ```
+
+---
+
+# What is SOP?
+
+- A browser security feature that restricts how scripts from one origin can access data from another origin.
+
+## What is an Origin?
+
+    * Defined as: Protocol + Hostname + Port
+    * Any change in these three makes it a different origin.
+
+## What SOP Blocks:
+
+    * Reading cookies, localStorage, or sessionStorage of another origin.
+    * Reading the response body of cross-origin fetch() or XMLHttpRequest.
+    * Accessing DOM of a cross-origin iframe.
+
+## What SOP Allows:
+
+    * Sending requests to other origins (e.g., fetch, <img>, <script>).
+    * Loading images, styles, scripts, and fonts from other origins (read-only).
+    * Embedding content in cross-origin iframes (no access to internal content).
+
+## Why SOP Exists:
+
+    * To protect users from malicious websites trying to steal data from other sites (like your bank or email).
+    * Prevents cross-site attacks like CSRF and data theft.
+
+## Who Enforces SOP?
+
+    * The browser, automatically and always enabled.
+
+## Can You Disable SOP?
+
+    * No. SOP is enforced in all modern browsers and cannot be turned off.
+
+## How to Allow Cross-Origin Access (Safely):
+
+    * Use CORS (Cross-Origin Resource Sharing) — configured on the server.
+    * Use postMessage API — for secure communication between iframes/windows.
+
+---
+
+# What is XSS?
+
+Cross-Site Scripting (XSS) is a vulnerability where attackers inject malicious JavaScript into a web page, which then runs in the browser of other users.
+
+## Why It’s Dangerous ?
+
+- Can steal cookies, sessions, and sensitive data
+- Can impersonate users or perform actions on their behalf
+- May lead to account takeovers or site defacement
+
+## How It Happens ?
+
+- A site displays user input (like a comment or form value) without sanitizing it
+- The attacker injects a script
+- Other users visiting that page run the script unknowingly
+
+## How to Prevent It ?
+
+- Sanitize or escape all user input
+- Use tools like DOMPurify
+- Avoid unsafe methods like innerHTML, eval, etc.
+- Use Content Security Policy (CSP) to block unwanted scripts
