@@ -1,0 +1,1 @@
+Changing domElement -> http://localhost:4000/?q=<script>document.querySelector("h1").innerText="Hacked!"</script>

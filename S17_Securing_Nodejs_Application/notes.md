@@ -317,3 +317,60 @@ Cross-Site Scripting (XSS) is a vulnerability where attackers inject malicious J
 - Use tools like DOMPurify
 - Avoid unsafe methods like innerHTML, eval, etc.
 - Use Content Security Policy (CSP) to block unwanted scripts
+
+---
+
+# XSS Sanitization with DOMPurify
+
+`Why?` To protect against XSS, always sanitize HTML from users or backend before rendering.
+
+`Tool:` Use dompurify for sanitizing HTML.
+
+## Server-Side (Node.js)
+
+    -> Needs a DOM-like environment → install jsdom.
+    -> Eg:
+        import createDOMPurify from 'dompurify';
+        import { JSDOM } from 'jsdom';
+
+        const DOMPurify = createDOMPurify(new JSDOM('').window);
+        const clean = DOMPurify.sanitize(dirtyHTML);
+
+## Client-Side (React)
+
+    -> Directly use dompurify to sanitize and safely render HTML:
+    -> Eg:
+        import DOMPurify from 'dompurify';
+
+        const SafeHTML = ({ html }) => (
+        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }} />
+        );
+
+---
+
+# Types of XSS Attack
+
+Cross-Site Scripting (XSS) allows attackers to inject malicious JavaScript into a webpage. There are 4 main types:
+
+## Stored XSS (Persistent)
+
+    -> Script is saved on the server (e.g., in a comment)
+    -> Runs for every user who views it
+    -> 🔥 High risk
+
+## Self-XSS
+
+    -> Attacker tricks user into pasting code in their browser console
+    -> ⚠️ Medium risk
+
+## Reflected XSS (Non-Persistent)
+
+    -> Script comes from the URL or form and reflects in the response
+    -> Runs immediately when the page loads
+    -> ⚠️ Medium–High risk
+
+## DOM-Based XSS
+
+    -> Happens in client-side JavaScript (e.g., from innerHTML)
+    -> No server involved
+    -> ⚠️ Medium–High risk
