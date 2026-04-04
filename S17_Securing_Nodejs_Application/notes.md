@@ -374,3 +374,177 @@ Cross-Site Scripting (XSS) allows attackers to inject malicious JavaScript into 
     -> Happens in client-side JavaScript (e.g., from innerHTML)
     -> No server involved
     -> ⚠️ Medium–High risk
+
+---
+
+# What is CSP?
+
+    -> Content Security Policy (CSP) is a security feature that controls what content (scripts, styles, images, etc.) your website is allowed to load. It helps protect against XSS, clickjacking, and code injection.
+
+## Why Use It?
+
+    -> Blocks untrusted scripts and resources
+    -> Prevents inline script execution
+    -> Reduces risk of browser-based attacks
+
+## How to Use
+
+    -> Set CSP via HTTP headers or <meta> tags:
+        Content-Security-Policy: default-src 'self'; script-src 'self' https://trusted.com
+
+## Best Practices
+
+    -> Use 'self' for trusted sources
+    -> Avoid 'unsafe-inline' and 'unsafe-eval'
+    -> Use nonces or hashes for inline scripts
+    -> Set frame-ancestors 'none' to block iframes
+
+### Example (Meta Tag):
+
+```html
+<meta
+  http-equiv="Content-Security-Policy"
+  content="default-src 'self'; script-src 'self'"
+/>
+```
+
+## 🧩 Key CSP Directives
+
+| Directive         | Description                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| `default-src`     | Fallback for all other resource types (scripts, styles, etc.) |
+| `script-src`      | Allowed sources for JavaScript                                |
+| `style-src`       | Allowed sources for CSS                                       |
+| `img-src`         | Allowed sources for images                                    |
+| `font-src`        | Allowed sources for fonts                                     |
+| `connect-src`     | Controls where `fetch`, `XHR`, WebSockets can connect         |
+| `frame-ancestors` | Restricts which domains can embed the page in an iframe       |
+| `object-src`      | Controls loading of plugins like Flash (mostly obsolete)      |
+| `media-src`       | Controls audio/video sources                                  |
+
+## 🚨 Dangerous Sources to Avoid
+
+| Source            | Why It's Dangerous                                             |
+| ----------------- | -------------------------------------------------------------- |
+| `'unsafe-inline'` | Allows inline scripts/styles, defeats CSP's XSS protection     |
+| `'unsafe-eval'`   | Allows `eval()` and similar, risky execution of arbitrary code |
+
+> Only use these in development or when absolutely necessary with strong justification.
+
+## ✅ Recommended Practices
+
+- Always define a **strict `default-src`**
+- Use `'self'` wherever possible (means same-origin)
+- Avoid `'unsafe-inline'` and `'unsafe-eval'`
+- Use **nonces** or **hashes** for inline scripts if needed
+- Define `frame-ancestors 'none'` to block clickjacking
+
+## 🔍 Example: Strict CSP Header
+
+```http
+Content-Security-Policy: \
+  default-src 'self'; \
+  script-src 'self' https://cdn.example.com; \
+  style-src 'self' https://fonts.googleapis.com; \
+  img-src 'self' data:; \
+  font-src 'self' https://fonts.gstatic.com; \
+  connect-src 'self'; \
+  frame-ancestors 'none';
+```
+
+## 🧪 Testing Your CSP
+
+- Use browser dev tools → Network tab → check for CSP headers
+- Tools:
+  - [Google CSP Evaluator](https://csp-evaluator.withgoogle.com/)
+
+## ⚠️ Common Mistakes
+
+- Overusing `'unsafe-inline'` or `'unsafe-eval'`
+- Not testing third-party integrations (CDNs, analytics)
+- Setting CSP via meta tags only — headers are preferred
+
+## 🧰 Tools and Libraries
+
+- `helmet` (for Express.js):
+
+  ```js
+  import helmet from 'helmet';
+  app.use(helmet());
+  ```
+
+- Online CSP generators
+- Security scanners like Mozilla Observatory
+
+## 📦 CSP Reporting
+
+You can ask browsers to send violation reports:
+
+```http
+Content-Security-Policy-Report-Only: default-src 'self'; report-uri /csp-violation-report-endpoint
+```
+
+## Summary
+
+    CSP adds a strong layer of protection to your website by allowing only safe content to run. It’s one of the easiest ways to defend against common web attacks.
+
+> "Don't wait for a breach to enforce your content boundaries. CSP is your first line of browser defense."
+
+---
+
+# Reporting CSP
+
+### 1. Add Reporting in CSP Header
+
+```ts
+- Use report-uri or report-to:
+- Content-Security-Policy: default-src 'self'; report-uri /csp-report
+```
+
+### 2. Browser Sends Violation Reports
+
+```
+Sends JSON to your endpoint when a CSP rule is violated.
+```
+
+### 3. Create Server Endpoint to Receive Reports
+
+```ts
+   Example (Express.js):
+
+   app.post('/csp-report', express.json({ type: "application/csp-report"}), (req, res) => {
+   console.log(req.body);
+   res.sendStatus(204);
+   });
+```
+
+---
+
+# Using inline scripts with hash
+
+### 1. Write the Inline Script
+
+```js
+<script>console.log("Hello CSP!");</script>
+```
+
+### 2. Generate SHA-256 Hash
+
+In Node.js:
+
+```ts
+crypto
+  .createHash('sha256')
+  .update('console.log("Hello CSP!");')
+  .digest('base64');
+```
+
+### 3. Add Hash to CSP Header
+
+```ts
+Content-Security-Policy: script-src 'self' 'sha256-<your-hash>';
+```
+
+### 4. Keep Script Exactly the Same
+
+Even a small change breaks the hash match.
