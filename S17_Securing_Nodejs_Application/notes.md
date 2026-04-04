@@ -548,3 +548,65 @@ Content-Security-Policy: script-src 'self' 'sha256-<your-hash>';
 ### 4. Keep Script Exactly the Same
 
 Even a small change breaks the hash match.
+
+---
+
+# What is Clickjacking?
+
+    Clickjacking (short for click hijacking) is a malicious technique where an attacker tricks a user into clicking on something different from what they perceive.
+
+    It usually involves embedding a legitimate website (like a banking site, “Like” button, or video player) inside an invisible or disguised frame (<iframe>), so when the user clicks, they are actually interacting with the attacker’s chosen target.
+
+    👉 In simple words: You think you’re clicking a harmless button, but you’re actually clicking something hidden.
+
+## Clickjacking Works
+
+    -> Attacker sets up a malicious webpage.
+
+    -> On this page, they load the victim’s site (like a bank transfer form, or social media “Like” button) inside a transparent iframe.
+
+    -> The iframe is positioned so that when the user clicks a visible button on the attacker’s page, they are unknowingly clicking the hidden iframe element.
+
+    -> The attacker manipulates the action – e.g., transferring money, liking a page, or enabling webcam permissions.
+
+## Real-World Examples of Clickjacking
+
+    -> Facebook Likejacking (2010s)
+    Attackers tricked users into “liking” pages by hiding the Facebook Like button under fake video play buttons. This boosted the popularity of pages without the user’s consent.
+
+    -> Twitter Tweetjacking
+    Some websites made users unknowingly tweet links by overlaying invisible tweet buttons.
+
+    -> Banking Fraud
+    A user might be tricked into clicking a hidden "Transfer Money" button on their bank site while believing they are playing a game or pressing another button.
+
+    -> Adobe Flash Camera/Microphone Settings (2008)
+    Attackers exploited clickjacking to make users enable their webcam/microphone without realizing it.
+
+## How to Prevent Clickjacking
+
+    For Developers / Website Owners
+
+    1) X-Frame-Options HTTP Header
+
+        DENY → Page cannot be displayed in a frame.
+        SAMEORIGIN → Page can only be displayed in a frame on the same origin.
+        ALLOW-FROM https://example.com/ → Allow framing only from a trusted domain.
+
+    2) Content-Security-Policy (CSP) with frame-ancestors:
+
+        Content-Security-Policy: frame-ancestors 'self' https://trusted.com
+        More flexible and modern replacement for X-Frame-Options.
+
+    3) Frame Busting Scripts (legacy, less reliablem, older method)
+
+        JavaScript to detect if a page is inside a frame and break out:
+
+        if (top !== self) {
+            top.location = self.location;
+        }
+
+    For Users:
+        -> Use updated browsers (modern browsers block many iframe exploits).
+        -> Use browser extensions like NoScript or uBlock Origin that block clickjacking attempts.
+        -> Avoid clicking on suspicious links and “free” video play buttons.
