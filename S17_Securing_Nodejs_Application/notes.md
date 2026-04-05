@@ -737,3 +737,225 @@ If you want to test cross-subdomain cookies during development:
 
 4. Save and close (`Ctrl+O`, then `Ctrl+X`).
 5. Restart your browser if necessary.
+
+---
+
+# Understanding Top-Level Navigations
+
+A **top-level navigation** refers to any change that affects the **main address bar (URL)** of the browser — i.e., when the **topmost browsing context** (the main tab or window) is redirected or loaded to a new page.
+
+It is considered a **user-initiated full-page navigation**.
+
+## Examples of Top-Level Navigations
+
+1. **Clicking a link:**
+
+   ```html
+   <a href="https://example.com/profile">Go to Profile</a>
+   ```
+
+   This navigates the entire page to `https://example.com/profile`.
+
+2. **Submitting a form:**
+
+   ```html
+   <form action="https://example.com/submit" method="GET">
+     <button type="submit">Submit</button>
+   </form>
+   ```
+
+   If the form is not inside an iframe and no `target` attribute is used, it changes the main page URL.
+
+3. **Programmatic navigation:**
+
+   ```js
+   window.location.href = 'https://example.com/dashboard';
+   ```
+
+   JavaScript navigation that causes the browser to load a new URL.
+
+4. **Entering a URL manually:**
+   The user types a new address into the browser's address bar and presses Enter.
+
+## What Is Not Top-Level Navigation
+
+1. **Iframe navigations:**
+
+   ```html
+   <iframe src="https://example.com/child"></iframe>
+   ```
+
+   The main page stays the same — only the iframe's content changes.
+
+2. **AJAX / `fetch()` / `XMLHttpRequest`:**
+   These make network requests but do **not change** the visible URL or load a new page.
+
+3. **Image, script, or video loads:**
+
+   ```html
+   <img src="https://example.com/image.jpg" />
+   ```
+
+   Loading resources doesn’t affect the top-level page.
+
+## Why It Matters for Security
+
+Browser cookie policies (like `SameSite=Lax`) **allow cookies on top-level GET navigations**, even if they’re cross-site. But they block cookies for other types of cross-origin requests, helping defend against CSRF.
+
+## ✅ TL;DR
+
+- Top-level navigation changes the main browser URL or page.
+- It can be triggered by link clicks, form submissions, or JavaScript.
+- It’s **important** in how browsers decide whether or not to send cookies during a request.
+
+---
+
+# Creating an HTTPS Express Server Using OpenSSL
+
+## Step 1: Generate SSL Certificate and Key with OpenSSL
+
+Run the following command in your terminal:
+
+```bash
+openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365
+```
+
+This creates:
+
+- `key.pem`: Your private key
+- `cert.pem`: Your self-signed SSL certificate
+
+> Note: You'll be prompted for details like Country, State, etc. You can skip them by pressing Enter.
+
+## Step 2: Update Your Express Code to Use HTTPS
+
+Replace your HTTP server code with the following code:
+
+```js
+// index.js
+import express from 'express';
+import https from 'https';
+import fs from 'fs';
+
+const app = express();
+
+app.get('/', (req, res) => {
+  res.send('Hello Secure World 🔒');
+});
+
+const PORT = 4000;
+
+const sslOptions = {
+  key: fs.readFileSync('./key.pem'),
+  cert: fs.readFileSync('./cert.pem'),
+};
+
+https.createServer(sslOptions, app).listen(PORT, () => {
+  console.log(`🚀 HTTPS server running at https://localhost:${PORT}`);
+});
+```
+
+## Step 3: Run Your Server
+
+```bash
+node index.js
+```
+
+## Step 4: Visit in Your Browser
+
+Open your browser and navigate to:
+
+```
+https://localhost:4000
+```
+
+> ⚠️ You'll see a security warning because the certificate is self-signed. Click "Advanced" → "Proceed".
+
+---
+
+# Understanding the `SameSite` Cookie Attribute
+
+## What is `SameSite`?
+
+The `SameSite` attribute is a setting on cookies that tells browsers **when to include cookies in cross-site requests**. It was introduced to help protect web applications from **Cross-Site Request Forgery (CSRF)** attacks.
+
+## Why It Matters
+
+Browsers automatically used to attach cookies to requests — even those initiated by other websites (like form submissions or image loads). This behavior was exploited by attackers. `SameSite` gives developers control over **when cookies should or should not be sent**.
+
+## History of `SameSite`
+
+| Year            | Event                                                                                                                                                                 |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Before 2016** | ❌ The `SameSite` attribute did not exist. Browsers sent cookies with **all cross-site requests** by default — even malicious ones.                                   |
+| **2016**        | ✅ Chrome 51 introduced support for the `SameSite` attribute (optional). Developers could set `SameSite=Strict` or `Lax` manually. It's **default value** was `None`. |
+| **2020**        | 🔐 Chrome 80 (and later other browsers) changed the **default behavior**. Now, cookies **without** a `SameSite` attribute are treated as `SameSite=Lax`.              |
+
+## `SameSite` Attribute Values
+
+### 1. `SameSite=Strict`
+
+- Cookie is **only sent** if the request is **same-site** (same origin).
+- Completely blocks cookies in all cross-site requests — even `GET` link clicks.
+- ✅ Maximum protection, but can break user flows like OAuth redirects or email confirmation links.
+
+### 2. `SameSite=Lax`
+
+- Cookies are sent:
+  - On **same-site** requests ✅
+  - On **top-level cross-site GET navigations** (like link clicks) ✅
+
+- Cookies are **not sent** on cross-site `POST`, `PUT`, or `DELETE` ❌
+- ✅ This is the **default behavior in modern browsers** (since 2020)
+
+### 3. `SameSite=None`
+
+- Cookies are sent on **all requests**, including cross-site `POST`, `PUT`, etc. ✅
+- Requires:
+  - `SameSite=None`
+  - `Secure` flag (must be HTTPS)
+
+- ❗ This is the only value that **does not protect** against CSRF
+
+## 🔐 Security Implications
+
+| Value    | CSRF Protection | Use Case                                                 |
+| -------- | --------------- | -------------------------------------------------------- |
+| `Strict` | ✅ Strongest    | Admin panels, banking apps                               |
+| `Lax`    | ✅ Good enough  | Most web apps (default)                                  |
+| `None`   | ❌ None         | Needed for cross-site iframes or federated login systems |
+
+## ✅ TL;DR
+
+- Before 2016: No `SameSite` — cookies were sent everywhere
+- 2016: Chrome introduced `SameSite` as an **optional** defense
+- 2020: Modern browsers made `SameSite=Lax` the **default**
+- Always set `SameSite` explicitly for clarity and security:
+
+```js
+res.cookie('sessionId', 'abc123', {
+  sameSite: 'lax', // or "strict", or "none"
+  secure: true,
+  httpOnly: true,
+});
+```
+
+> 🍪 The `SameSite` attribute is now one of the simplest and most effective defenses against CSRF.
+
+## Helpful Videos
+
+### **Chrome for Developers**
+
+- [SameSite Cookies - Chrome Update](https://www.youtube.com/watch?v=GPz7onXjP_4)
+
+### **Hussein Nasser**
+
+- [Will the New Chrome version 80 finally end Cross-Site Request forgery?](https://www.youtube.com/watch?v=ULKEr8Bdjlc)
+
+- [SameSite Cookie Attribute Explained by Example](https://www.youtube.com/watch?v=aUF2QCEudPo)
+
+- [A SameSite Cookie Exception was made to avoid Redirect Loop in Single Sign-On (SSO) Let us Discuss](https://www.youtube.com/watch?v=4QiD8cvzCN0)
+
+### **LiveOverflow**
+
+- [The Same Origin Policy - Hacker History](https://www.youtube.com/watch?v=bSJm8-zJTzQ)
