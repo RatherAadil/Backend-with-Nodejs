@@ -959,3 +959,11 @@ res.cookie('sessionId', 'abc123', {
 ### **LiveOverflow**
 
 - [The Same Origin Policy - Hacker History](https://www.youtube.com/watch?v=bSJm8-zJTzQ)
+
+---
+
+# sameSite Attribute with Fetch()
+
+    Strict → never sent cross-site.
+    Lax → not sent cross-site (except 2-min POST grace period in Chrome).
+    None; Secure → always sent cross-site.
