@@ -31,8 +31,9 @@ app.get('/user', authMiddleware, (req, res) => {
 
 app.post('/login', (req, res) => {
   res.cookie('sid', '12345', {
-    sameSite: 'none',
+    sameSite: 'lax',
     secure: true,
+    domain: '.local.com',
   });
   res.json({ message: 'Logged in successfully.', user: req.body });
 });

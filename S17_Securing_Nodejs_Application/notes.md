@@ -967,3 +967,107 @@ res.cookie('sessionId', 'abc123', {
     Strict → never sent cross-site.
     Lax → not sent cross-site (except 2-min POST grace period in Chrome).
     None; Secure → always sent cross-site.
+
+---
+
+# CSRF Attack (Cross-Site Request Forgery)
+
+## What it is?
+
+    -> CSRF is when a hacker tricks your browser into sending a request you didn’t intend.
+    -> Since your browser has your cookies, the malicious request looks legit to the server.
+
+## How it works (Step by Step)
+
+    -> You log in to your bank (or any site) → Browser stores a session cookie.
+    -> You visit a malicious site (attacker’s blog, ad, or email link).
+    -> That site secretly makes a request to your bank like:
+        <img src="https://mybank.com/transfer?to=attacker&amount=1000" />
+    -> Browser automatically attaches your bank’s cookies.
+    -> Bank receives the request → sees valid cookie → assumes it’s you → money transferred.
+
+## Why it works?
+
+    -> Browsers auto-attach cookies to requests (same-site and cross-site).
+    -> The bank doesn’t know if the request came from you or a hacker’s site.
+
+## Real-World Examples
+
+    -> Money transfer without permission 💰
+    -> Changing your email/password on a site 🔑
+    -> Submitting a malicious form on your behalf
+
+## How to Prevent CSRF
+
+    -> SameSite Cookies → restrict cookie sending in cross-site requests.
+    -> CSRF Tokens → server generates a random token per session/request; form submissions must include it.
+    -> Double Submit Cookie → send CSRF token in both cookie + request body and compare.
+    -> Check Referer/Origin Header → validate the request came from the right site.
+    -> Use Secure + HttpOnly Cookies.
+
+---
+
+# Preventing CSRF Attack with CSRF Token
+
+## Note:
+
+```
+In case we have to set the `sameSite:'none'` for cookies then only we need CSRF Token
+```
+
+```
+In case if our frontend and backend are same, then we'll generate a csrfToken and embed it in one of the hidden input field and on all the requests we'll validate it.
+```
+
+## Note:
+
+```
+How to send and receive CSRF tokens when frontend and backend are separate?
+
+In that case we'll create a separate endpoint /csrf-token which will return the CSRF token to the frontend, and we'll call this endpoint just before making the form submit request and take the CSRF token and put it inside the form payload and verify on the server.
+```
+
+---
+
+# Preventing CSRF Attack using Custom Headers
+
+We created a custom header named `x-csrf-token` (it could be anything) with some value say 12345, and include it in every sensitive request.
+
+```ts
+await fetch('/pay', {
+  method: 'POST',
+  credentials: 'include',
+  headers: {
+    'x-csrf-token': '12345',
+  },
+});
+```
+
+- On the server, we validate its presence:
+
+```ts
+if (!req.headers['x-csrf-token']) {
+  return res.send('CSRF Token Missing');
+}
+```
+
+If the request doesn't include this custom header then the request is rejected.
+
+## How does this header prevent CSRF Attack
+
+- Browsers automatically include cookies in cross-site requests, which is what makes CSRF attacks possible.
+
+* However, custom headers (like x-csrf-token) cannot be added to cross-origin requests by default. EX: via a form.
+
+* When such headers are used, the browser sends a preflight (OPTIONS) request for custom headers or methods like PUT , PATCH , DELETE as part of the CORS mechanism, to check whether the server allows it or not.
+
+* If the server does not explicitly allow the attacker’s origin, the browser blocks the request.
+* As a result, the actual request with the custom header is never sent.
+
+## What If an Attacker Tries to Send the Same Header?
+
+An attacker cannot successfully send the same custom header because:
+
+- Browsers enforce CORS restrictions
+- Cross-origin requests with custom headers require server permission
+- If the server only allows trusted origins, the attacker’s request fails during the preflight phase
