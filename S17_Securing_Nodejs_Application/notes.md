@@ -1071,3 +1071,83 @@ An attacker cannot successfully send the same custom header because:
 - Browsers enforce CORS restrictions
 - Cross-origin requests with custom headers require server permission
 - If the server only allows trusted origins, the attacker’s request fails during the preflight phase
+
+---
+
+# DoS Attack
+
+## What is a DoS Attack?
+
+    -> Denial of Service (DoS) = An attack where the goal is to make a website, server, or network unavailable to its users.
+    -> Instead of stealing data, attackers overwhelm the system so that real users can’t access it.
+
+## How it Works
+
+    -> Flooding with Requests
+        The attacker sends too many fake requests at once (like refreshing a site millions of times).
+        The server gets overloaded and can’t handle real users.
+
+    -> Resource Exhaustion
+        Attackers may exploit weak spots (CPU, memory, bandwidth).
+        Example: Making a database do heavy queries repeatedly until it crashes.
+
+    -> Exploiting Vulnerabilities
+        Sometimes attackers use bugs in software to crash the service instead of flooding it.
+
+## Types of DoS Attacks
+
+    Volumetric Attacks → Overwhelm bandwidth (like flooding a pipe with water).
+    Protocol Attacks → Exploit weaknesses in network protocols (e.g., SYN flood).
+    Application-Layer Attacks → Target the app itself (e.g., sending repeated search requests that are expensive to process).
+
+## Real-World Example
+
+    -> Imagine a shop with only 1 cashier.
+    -> An attacker hires 1,000 fake customers to stand in line.
+    -> Real customers can’t buy anything → service is denied.
+
+## Defense Against DoS
+
+    -> Rate limiting (limit how many requests per second each user can make).
+    -> Firewalls & Intrusion Detection (block suspicious traffic).
+
+---
+# Rate Limiting
+
+## What is Rate Limiting?
+    -> Rate Limiting = Restricting how many times a user/client can call an API within a specific time frame.
+    -> Example: "A user can only call the /login API 5 times per minute."
+    -> It prevents abuse, DoS, brute-force attacks, and unnecessary server load.
+
+## Why APIs Need Rate Limiting
+    -> Prevents brute force attacks (e.g., guessing passwords).
+    -> Protects against DoS/DDoS attacks (too many requests).
+    -> Ensures fair usage among users.
+    -> Saves server resources & bandwidth.
+
+## Common Strategies for Rate Limiting
+
+    Fixed Window
+        -> Example: Allow 100 requests per minute.
+        -> Simple but can cause bursts at window reset.
+        -> Eg. "You can withdraw ₹10,000 per day from ATM."
+
+    Sliding Window / Rolling Window
+        -> Looks at last X seconds/minutes dynamically.
+        -> More accurate and smooth.
+        -> Eg. "In the last 24 hours, you can only withdraw ₹10,000." 
+
+    Token Bucket
+        -> Each request consumes a “token.”
+        -> Tokens refill at a set rate (like filling a bucket with drops).
+        -> Flexible — allows short bursts but controls long-term usage.
+        -> Eg. "Your internet plan allows bursts of high speed (using tokens), but overall speed is limited."
+
+    Leaky Bucket
+        -> Requests are processed at a fixed rate, excess gets dropped.
+        -> Smooths out request spikes.
+        -> Eg. "Queue at a toll booth, cars leave at a fixed rate; if too many arrive, they wait or get blocked."
+
+## Example in Real Life
+    -> ATM: You can’t withdraw money more than a limit per day.
+    -> API: You can’t call /checkout more than 10 times per minute.
